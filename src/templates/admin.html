@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Voice Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab:hover {
+            color: #667eea;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .card h3 .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #999;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .device-item {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .device-info h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .device-info p {
+            font-size: 12px;
+            color: #999;
+            font-family: monospace;
+        }
+        .device-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .log-viewer {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            max-height: 500px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        .log-line {
+            margin-bottom: 4px;
+        }
+        .log-line.info { color: #4ec9b0; }
+        .log-line.warning { color: #dcdcaa; }
+        .log-line.error { color: #f48771; }
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.2s;
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group input:disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎙️ Voice Assistant Admin</h1>
+        <p class="subtitle">Server Management Dashboard</p>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="showTab('devices')">📱 Devices</button>
+            <button class="tab" id="tab-settings" onclick="showTab('settings')">⚙️ Settings</button>
+            <button class="tab" onclick="showTab('logs')">📝 Logs</button>
+            <button class="tab" onclick="showTab('api-keys')">🔑 API Keys</button>
+            <button class="tab" onclick="showTab('knowledge')">🧠 AI Learning</button>
+        </div>
+        
+        <div id="message"></div>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>📱 Active Devices</h3>
+                    <div class="stat-value" id="activeDevices">0</div>
+                    <div class="stat-label">Registered devices</div>
+                </div>
+                <div class="card">
+                    <h3>💬 Total Commands</h3>
+                    <div class="stat-value" id="totalCommands">0</div>
+                    <div class="stat-label">Commands processed today</div>
+                </div>
+                <div class="card">
+                    <h3>💰 API Cost</h3>
+                    <div class="stat-value" id="apiCost">$0.00</div>
+                    <div class="stat-label">Estimated today</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🔄 Server Status</h3>
+                <div id="serverStatus"></div>
+            </div>
+        </div>
+        
+        <!-- Devices Tab -->
+        <div id="devices" class="tab-content">
+            <div class="card">
+                <h3>
+                    <span>📱 Registered Devices</span>
+                    <a href="/register" target="_blank" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px; text-decoration: none;">+ Add Device</a>
+                </h3>
+                <div id="devicesList" class="device-list"></div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <h3>⚙️ Server Settings</h3>
+                <form id="settingsForm">
+                    <div class="form-group">
+                        <label>Server Port</label>
+                        <input type="number" id="serverPort" value="8080">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Recording Duration (seconds)</label>
+                        <input type="number" id="maxDuration" value="60">
+                    </div>
+                    <div class="form-group">
+                        <label>TTS Voice</label>
+                        <select id="ttsVoice">
+                            <option value="alba">Alba (female)</option>
+                            <option value="eve">Eve (female)</option>
+                            <option value="jane">Jane (female)</option>
+                            <option value="cosette">Cosette (female)</option>
+                            <option value="marius">Marius (male)</option>
+                            <option value="jean">Jean (male)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <p style="margin-top: 12px; font-size: 13px; color: #999;">TTS voice applies on the next watch reply. Port/duration need a restart.</p>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div class="card">
+                <h3>
+                    <span>📝 Server Logs</span>
+                    <div class="actions">
+                        <button class="btn btn-secondary" onclick="refreshLogs()">Refresh</button>
+                        <a href="/api/logs/download" class="btn btn-primary" style="text-decoration: none;">Download Full Log</a>
+                    </div>
+                </h3>
+                <div id="logViewer" class="log-viewer">
+                    Loading logs...
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Keys Tab -->
+        <div id="api-keys" class="tab-content">
+            <div class="card">
+                <h3>🔑 API Keys</h3>
+                <form id="apiKeysForm">
+                    <div class="form-group">
+                        <label>OpenAI API Key</label>
+                        <input type="password" id="openaiKey" placeholder="sk-proj-...">
+                    </div>
+                    <div class="form-group">
+                        <label>Phoneshop Username</label>
+                        <input type="text" id="phoneshopUsername" placeholder="username">
+                    </div>
+                    <div class="form-group">
+                        <label>Phoneshop Password</label>
+                        <input type="password" id="phoneshopPassword" placeholder="password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update API Keys</button>
+                    <p style="margin-top: 12px; font-size: 13px; color: #999;">⚠️ Server restart required after updating</p>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Knowledge Base Tab -->
+        <div id="knowledge" class="tab-content">
+            <div class="card">
+                <h3>🧠 AI Learning - Brand/Model Corrections</h3>
+                <p style="margin-bottom: 16px; color: #666;">The AI learns from your corrections to improve accuracy over time.</p>
+                <div id="knowledgeBase"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Device Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Device</h2>
+                <button class="close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editDeviceForm">
+                <div class="form-group">
+                    <label>Device ID (MAC Address)</label>
+                    <input type="text" id="editDeviceId" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Staff Member Name</label>
+                    <input type="text" id="editStaffName" required>
+                </div>
+                <div class="form-group">
+                    <label>Phoneshop Username</label>
+                    <input type="text" id="editPhoneshopUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Phoneshop Password</label>
+                    <input type="password" id="editPhoneshopPassword" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const pane = document.getElementById(tabName);
+            if (pane) pane.classList.add('active');
+            const btn = document.getElementById('tab-' + tabName) ||
+                (typeof event !== 'undefined' && event && event.target);
+            if (btn && btn.classList) btn.classList.add('active');
+            if (tabName === 'logs') refreshLogs();
+            if (tabName === 'dashboard') loadDashboard();
+            if (tabName === 'devices') loadDevices();
+            if (tabName === 'knowledge') loadKnowledgeBase();
+            if (tabName === 'settings') loadSettings();
+        }
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/admin/settings');
+                const data = await response.json();
+                if (data.server_port) document.getElementById('serverPort').value = data.server_port;
+                if (data.max_duration) document.getElementById('maxDuration').value = data.max_duration;
+                const sel = document.getElementById('ttsVoice');
+                if (data.voices && data.voices.length) {
+                    sel.innerHTML = data.voices.map(v =>
+                        `<option value="${v.id}">${v.label}</option>`
+                    ).join('');
+                }
+                if (data.tts_voice) sel.value = data.tts_voice;
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+        
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            setTimeout(() => messageDiv.textContent = '', 5000);
+        }
+        
+        async function loadDashboard() {
+            try {
+                const [devicesRes, statusRes] = await Promise.all([
+                    fetch('/api/devices'),
+                    fetch('/status')
+                ]);
+                
+                const devices = await devicesRes.json();
+                const status = await statusRes.json();
+                
+                document.getElementById('activeDevices').textContent = Object.keys(devices).length;
+                document.getElementById('serverStatus').innerHTML = `
+                    <p><strong>Status:</strong> <span class="badge success">${status.status}</span></p>
+                    <p><strong>Active Conversations:</strong> ${status.active_conversations}</p>
+                    <p><strong>OpenAI API:</strong> <span class="badge success">Connected</span></p>
+                `;
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+        
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const devices = await response.json();
+                
+                const listDiv = document.getElementById('devicesList');
+                if (Object.keys(devices).length === 0) {
+                    listDiv.innerHTML = '<p style="color: #999; text-align: center;">No devices registered</p>';
+                    return;
+                }
+                
+                listDiv.innerHTML = Object.entries(devices).map(([id, device]) => `
+                    <div class="device-item" id="device-${id.replace(/:/g, '-')}">
+                        <div class="device-info">
+                            <h4>${device.staff_name}</h4>
+                            <p>${id}</p>
+                        </div>
+                        <div class="device-actions">
+                            <span class="badge success">Active</span>
+                            <button class="btn btn-secondary" onclick="editDevice('${id}', '${device.staff_name}', '${device.phoneshop_username}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteDevice('${id}', '${device.staff_name}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load devices:', error);
+            }
+        }
+        
+        async function refreshLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const logs = await response.json();
+                
+                const logViewer = document.getElementById('logViewer');
+                logViewer.innerHTML = logs.map(log => {
+                    const level = log.toLowerCase().includes('error') ? 'error' :
+                                 log.toLowerCase().includes('warning') ? 'warning' : 'info';
+                    return `<div class="log-line ${level}">${log}</div>`;
+                }).join('');
+                
+                logViewer.scrollTop = logViewer.scrollHeight;
+            } catch (error) {
+                document.getElementById('logViewer').innerHTML = 
+                    '<div class="log-line error">Failed to load logs</div>';
+            }
+        }
+        
+        async function deleteDevice(deviceId, staffName) {
+            if (!confirm(`Delete device for ${staffName}?\n\nDevice ID: ${deviceId}\n\nThis cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/device/${encodeURIComponent(deviceId)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Admin-Token': localStorage.getItem('admin_token')
+                    }
+                });
+                
+                if (response.ok) {
+                    showMessage(`✓ Device ${staffName} deleted`, 'success');
+                    loadDevices();
+                } else {
+                    const result = await response.json();
+                    showMessage('✗ ' + (result.error || 'Delete failed'), 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Network error: ' + error.message, 'error');
+            }
+        }
+        
+        async function editDevice(deviceId, staffName, username) {
+            // Fetch full device info from server
+            try {
+                const response = await fetch('/api/devices');
+                const devices = await response.json();
+                const device = devices[deviceId];
+                
+                if (!device) {
+                    showMessage('✗ Device not found', 'error');
+                    return;
+                }
+                
+                // Populate modal fields
+                document.getElementById('editDeviceId').value = deviceId;
+                document.getElementById('editStaffName').value = device.staff_name || '';
+                document.getElementById('editPhoneshopUsername').value = device.phoneshop_username || '';
+                document.getElementById('editPhoneshopPassword').value = device.phoneshop_password || '';
+                
+                // Show modal
+                document.getElementById('editModal').classList.add('show');
+            } catch (error) {
+                showMessage('✗ Failed to load device info', 'error');
+            }
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+        
+        // Handle edit form submission
+        document.getElementById('editDeviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deviceId = document.getElementById('editDeviceId').value;
+            const formData = {
+                staff_name: document.getElementById('editStaffName').value,
+                phoneshop_username: document.getElementById('editPhoneshopUsername').value,
+                phoneshop_password: document.getElementById('editPhoneshopPassword').value
+            };
+            
+            try {
+                const response = await fetch(`/api/device/${encodeURIComponent(deviceId)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Admin-Token': localStorage.getItem('admin_token')
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`✓ ${result.message}`, 'success');
+                    closeEditModal();
+                    loadDevices();
+                } else {
+                    showMessage('✗ ' + (result.error || 'Update failed'), 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Network error: ' + error.message, 'error');
+            }
+        });
+        
+        async function loadKnowledgeBase() {
+            try {
+                const response = await fetch('/api/knowledge-base', {
+                    headers: { 'Admin-Token': localStorage.getItem('admin_token') }
+                });
+                const data = await response.json();
+                
+                const kbDiv = document.getElementById('knowledgeBase');
+                kbDiv.innerHTML = `
+                    <h4 style="margin-top: 20px;">Learned Examples (${data.examples.length})</h4>
+                    <div style="max-height: 400px; overflow-y: auto; background: #f8f9fa; padding: 16px; border-radius: 8px; margin-top: 12px;">
+                        ${data.examples.map(ex => `
+                            <div style="margin-bottom: 12px; padding: 12px; background: white; border-radius: 6px;">
+                                <strong>"${ex.input}"</strong> → 
+                                <span style="color: #667eea;">${ex.brand} ${ex.model}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <h4 style="margin-top: 24px;">Parsing Rules</h4>
+                    <ul style="margin-top: 12px; line-height: 1.8;">
+                        ${data.rules.map(rule => `<li>${rule}</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                document.getElementById('knowledgeBase').innerHTML = 
+                    '<p style="color: #999;">Failed to load knowledge base</p>';
+            }
+        }
+        
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tts_voice: document.getElementById('ttsVoice').value,
+                        server_port: parseInt(document.getElementById('serverPort').value, 10),
+                        max_duration: parseInt(document.getElementById('maxDuration').value, 10)
+                    })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showMessage('✓ ' + (result.message || 'Settings saved'), 'success');
+                } else {
+                    showMessage('✗ ' + (result.error || 'Save failed'), 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Network error: ' + error.message, 'error');
+            }
+        });
+
+        // API Keys Form
+        document.getElementById('apiKeysForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                openai_key: document.getElementById('openaiKey').value,
+                phoneshop_username: document.getElementById('phoneshopUsername').value,
+                phoneshop_password: document.getElementById('phoneshopPassword').value
+            };
+            
+            try {
+                const response = await fetch('/api/update-env', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Admin-Token': localStorage.getItem('admin_token')
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage('✓ ' + result.message, 'success');
+                    document.getElementById('apiKeysForm').reset();
+                } else {
+                    showMessage('✗ ' + (result.error || 'Update failed'), 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Network error: ' + error.message, 'error');
+            }
+        });
+        
+        // Load dashboard on page load
+        loadDashboard();
+        if (location.hash === '#settings') {
+            showTab('settings');
+        }
+    </script>
+</body>
+</html>

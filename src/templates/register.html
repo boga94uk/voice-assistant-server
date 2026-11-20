@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Registration - Voice Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .devices-list {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .device-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .device-info {
+            flex: 1;
+        }
+        .device-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .device-id {
+            font-size: 12px;
+            color: #999;
+            font-family: monospace;
+        }
+        .status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .secret-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .secret-box.show {
+            display: block;
+        }
+        .secret-title {
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .secret-value {
+            background: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            border: 1px solid #ffc107;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .copy-btn {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .copy-btn:hover {
+            background: #e0a800;
+        }
+        .secret-warning {
+            color: #856404;
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="margin-bottom: 20px;">
+            <a href="/admin" style="text-decoration: none; color: #667eea; font-weight: 600;">← Back to Admin Panel</a>
+        </div>
+        
+        <h1>📱 Device Registration</h1>
+        <p class="subtitle">Register new ESP32 voice assistant devices</p>
+        
+        <div id="message"></div>
+        
+        <!-- Device Secret Display (shown after registration) -->
+        <div id="secretBox" class="secret-box">
+            <div class="secret-title">🔑 Device Secret Generated</div>
+            <div class="secret-value" id="secretValue"></div>
+            <button type="button" class="copy-btn" onclick="copySecret()">📋 Copy Secret</button>
+            <button type="button" class="copy-btn" onclick="hideSecret()" style="background: #6c757d; color: white;">Close</button>
+            <div class="secret-warning">⚠️ IMPORTANT: Save this secret! You need to flash it into your ESP32 firmware. It won't be shown again.</div>
+        </div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="deviceId">Device ID (MAC Address)</label>
+                <input type="text" id="deviceId" name="deviceId" 
+                       placeholder="AA:BB:CC:DD:EE:FF" 
+                       pattern="[A-Fa-f0-9:]{17}"
+                       required>
+                <div class="hint">Format: AA:BB:CC:DD:EE:FF (shown on device screen)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="staffName">Staff Member Name</label>
+                <input type="text" id="staffName" name="staffName" 
+                       placeholder="John Smith" 
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phoneshopUsername">Phoneshop Username</label>
+                <input type="text" id="phoneshopUsername" name="phoneshopUsername" 
+                       placeholder="john@shop.com" 
+                       required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phoneshopPassword">Phoneshop Password</label>
+                <input type="password" id="phoneshopPassword" name="phoneshopPassword" 
+                       placeholder="••••••••" 
+                       required>
+                <div class="hint">This is stored securely and used for API calls</div>
+            </div>
+            
+            <button type="submit">Register Device</button>
+        </form>
+        
+        <div class="devices-list">
+            <h2 style="margin-bottom: 16px; font-size: 18px; color: #333;">Registered Devices</h2>
+            <div id="devicesList"></div>
+        </div>
+    </div>
+    
+    <script>
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            setTimeout(() => messageDiv.textContent = '', 5000);
+        }
+        
+        function showSecret(secret) {
+            document.getElementById('secretValue').textContent = secret;
+            document.getElementById('secretBox').classList.add('show');
+            // Scroll to secret box
+            document.getElementById('secretBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function hideSecret() {
+            document.getElementById('secretBox').classList.remove('show');
+        }
+        
+        function copySecret() {
+            const secretText = document.getElementById('secretValue').textContent;
+            const btn = document.querySelector('.copy-btn'); // Find the copy button
+            const originalText = btn.textContent;
+            
+            navigator.clipboard.writeText(secretText).then(() => {
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => btn.textContent = originalText, 2000);
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+        
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const devices = await response.json();
+                
+                const listDiv = document.getElementById('devicesList');
+                if (Object.keys(devices).length === 0) {
+                    listDiv.innerHTML = '<p style="color: #999; text-align: center;">No devices registered yet</p>';
+                    return;
+                }
+                
+                listDiv.innerHTML = Object.entries(devices).map(([id, device]) => `
+                    <div class="device-card">
+                        <div class="device-info">
+                            <div class="device-name">${device.staff_name}</div>
+                            <div class="device-id">${id}</div>
+                        </div>
+                        <span class="status active">Active</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load devices:', error);
+            }
+        }
+        
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                device_id: document.getElementById('deviceId').value.toUpperCase(),
+                staff_name: document.getElementById('staffName').value,
+                phoneshop_username: document.getElementById('phoneshopUsername').value,
+                phoneshop_password: document.getElementById('phoneshopPassword').value
+            };
+            
+            try {
+                const response = await fetch('/api/register-device', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',  // Include session cookie for admin auth
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                console.log('Registration response:', result);  // Debug log
+                
+                if (response.ok) {
+                    // Show the secret prominently
+                    if (result.secret) {
+                        console.log('Secret received:', result.secret);  // Debug log
+                        showSecret(result.secret);
+                        showMessage(`✓ Device ${result.deviceId} registered successfully!`, 'success');
+                    } else {
+                        console.warn('No secret in response!', result);  // Debug log
+                        showMessage('✓ Device registered successfully! (No secret returned)', 'success');
+                    }
+                    document.getElementById('registerForm').reset();
+                    loadDevices();
+                } else if (response.status === 401 || response.status === 403) {
+                    // Not logged in as admin
+                    showMessage('✗ Please log in as admin first', 'error');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                } else {
+                    showMessage('✗ ' + (result.error || `Registration failed (${response.status})`), 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Network error: ' + error.message, 'error');
+            }
+        });
+        
+        // Load devices on page load
+        loadDevices();
+    </script>
+</body>
+</html>

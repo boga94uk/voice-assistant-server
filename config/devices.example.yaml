@@ -1,0 +1,15 @@
+# Copy to devices.yaml and fill in real values. Never commit devices.yaml.
+# See SETUP.md. AA:BB:CC:DD:EE:FF is the watch Wi-Fi MAC.
+# Replace the 64 zeros with python -c "import secrets; print(secrets.token_hex(32))"
+# and put that same secret on the watch.
+devices:
+  AA:BB:CC:DD:EE:FF:
+    device_id: AA:BB:CC:DD:EE:FF
+    enabled: true
+    staff_name: ESP Assistant
+    phoneshop_username: YOUR_PHONESHOP_USERNAME
+    phoneshop_password: YOUR_PHONESHOP_PASSWORD
+    secret: 0000000000000000000000000000000000000000000000000000000000000000
+registration:
+  default_enabled: true
+  require_approval: false

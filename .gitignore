@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+config/.env
+config/devices.yaml
+logs/
+audio_temp/
+invoices/
+*.log
+.DS_Store
+python-*.exe
+export_server.txt
+src/__pycache__/
